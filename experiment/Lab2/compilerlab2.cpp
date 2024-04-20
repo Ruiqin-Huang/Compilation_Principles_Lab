@@ -3,15 +3,17 @@
 // ID: 1120211809
 
 // The grammar that the primitive compiler can handle is as follows: 
-// Keywords: int, return
-// Identifier: single English letter
+// Keywords: int, return, main
+// Identifier: C89(start with a letter or _, followed by letters or digits or _)
 // Constants: Decimal integers, such as 1, 223, 10, etc
-// Operators: =,+, -, *,/, (,)
-// Delimiter: ;
+// Operators: =,+, -, *,/, %, <, <=, >, >=, ==, !=, &, |, ^
+// Delimiter: ;, {, }, (, )
+// Function: println_int()
 // Statement: expression statement, assignment statement, 
 //            where the expression statement contains parentheses 
 //            and nested parentheses;
 
+#include "LexicalAnalyzer.h"
 #include <fstream>
 #include <sstream>
 #include <cctype>
@@ -30,7 +32,7 @@ struct Token {
 
 // Classify token types
 string classifier(const string& token) {
-    if (token == "int" || token == "return") {
+    if (token == "int" || token == "return" || token == "main") {
         return "keyword";
     } else if (token == "=" || token == "+" || token == "-" || token == "*" || token == "/" || token == "(" || token == ")") {
         return "operator";
@@ -95,6 +97,7 @@ vector<Token> tokenize(const string& sourceCode) {
     
     return tokens;
 }
+
 
 int priority(const string& op) {
     if (op == "+" || op == "-")
@@ -334,7 +337,7 @@ int main(int argc, char* argv[]) {
     string assemblyCode = "";
     
     // Tokenize the source code
-    vector<Token> tokens = tokenize(sourceCode);
+    vector<Token> tokens = LexicalAnalyzer.analyse(sourceCode);
     
     // Print the tokens
     // for (const Token& token : tokens) {
