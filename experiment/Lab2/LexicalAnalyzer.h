@@ -20,7 +20,7 @@ private:
     int value(T *a, int n, T str);
     string KEYWORD[3];
     char OPERATOR[12];
-    char DELIMITER[5];
+    char DELIMITER[6];
     char FILTER[4];
     string FUNCTION[1];
 public:

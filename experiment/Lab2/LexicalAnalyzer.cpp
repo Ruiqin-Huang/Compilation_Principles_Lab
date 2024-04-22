@@ -19,7 +19,7 @@ using namespace std;
 LexicalAnalyzer::LexicalAnalyzer() {
     KEYWORD[0] = "int", KEYWORD[1] = "return", KEYWORD[2] = "main";
     OPERATOR[0] = '=', OPERATOR[1] = '+', OPERATOR[2] = '-', OPERATOR[3] = '*', OPERATOR[4] = '/', OPERATOR[5] = '%', OPERATOR[6] = '<', OPERATOR[7] = '>', OPERATOR[8] = '&', OPERATOR[9] = '|', OPERATOR[10] = '^', OPERATOR[11] = '!';
-    DELIMITER[0] = ';', DELIMITER[1] = '{', DELIMITER[2] = '}', DELIMITER[3] = '(', DELIMITER[4] = ')';
+    DELIMITER[0] = ';', DELIMITER[1] = '{', DELIMITER[2] = '}', DELIMITER[3] = '(', DELIMITER[4] = ')', DELIMITER[5] = ',';
     FILTER[0] = ' ', FILTER[1] = '\t', FILTER[2] = '\r', FILTER[3] = '\n';
     FUNCTION[0] = "println_int";
 }
