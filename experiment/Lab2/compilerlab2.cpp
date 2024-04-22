@@ -1,6 +1,7 @@
-// Lab 1: compilerlab1
+// Lab 2: compilerlab2
 // Name: Huang Ruiqin
 // ID: 1120211809
+// Class: 07112103
 
 // The grammar that the primitive compiler can handle is as follows: 
 // Keywords: int, return, main
