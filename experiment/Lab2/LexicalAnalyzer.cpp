@@ -94,7 +94,7 @@ int LexicalAnalyzer::value(T *a, int n, T str) {
     return -1;
 }
 
-void LexicalAnalyzer::analyse(const string& input) {
+vector<LexicalAnalyzer::Token> LexicalAnalyzer::analyse(const string& input) {
     int i = 0; 
     // Define a vector to store tokens
     vector<Token> tokens;
@@ -121,7 +121,7 @@ void LexicalAnalyzer::analyse(const string& input) {
                 type = "Identifier";
                 tokens.push_back({type, currentToken});
             }
-            cout << currentToken << "  " << type << endl;
+            // cout << currentToken << "  " << type << endl;
         } else if (IsDigit(input[i])) { // Check if it is a constant
             while (IsDigit(input[i])) {
                 currentToken += input[i];
@@ -129,7 +129,7 @@ void LexicalAnalyzer::analyse(const string& input) {
             }
             type = "Constant";
             tokens.push_back({type, currentToken});
-            cout << currentToken << "  " << type << endl;
+            // cout << currentToken << "  " << type << endl;
         } else if (IsOperator(input[i])) { // Check if it is an operator
             // Operator includes + - * / % < <= > >= == != & | ^
             if ( input[i] == '<' || input[i] == '>' || input[i] == '!' || input[i] == '=') {
@@ -146,16 +146,22 @@ void LexicalAnalyzer::analyse(const string& input) {
             }
             type = "Operator";
             tokens.push_back({type, currentToken});
-            cout << currentToken << "  " << type << endl;
+            // cout << currentToken << "  " << type << endl;
         } else if (IsDelimiter(input[i])) { // Check if it is a delimiter
             currentToken += input[i];
             i++;
             type = "Delimiter";
             tokens.push_back({type, currentToken});
-            cout << currentToken << "  " << type << endl;
+            // cout << currentToken << "  " << type << endl;
         } else {
             cout << "ERROR! Unknown character : " << input[i] << endl;
             exit(1);
         }
     }
+
+    return tokens;
+}
+
+void LexicalAnalyzer::printToken(const Token& token) {
+    cout << "Type: " << token.type << ", Value: " << token.value << endl;
 }

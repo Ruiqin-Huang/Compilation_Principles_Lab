@@ -1,4 +1,5 @@
 #include "LexicalAnalyzer.h"
+#include "LexicalAnalyzer.cpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -18,6 +19,11 @@ int main() {
     // Tokenize the source code
     cout << sourceCode << endl;
     cout << "Tokenizing..." << endl;
-    la.analyse(sourceCode);
+    vector<LexicalAnalyzer::Token> tokens = la.analyse(sourceCode);
+    for (LexicalAnalyzer::Token &token : tokens) {
+        // la.printToken(token);
+        cout << "Type: " << token.type << ", Value: " << token.value << endl;
+    }
+    
     return 0;
 }

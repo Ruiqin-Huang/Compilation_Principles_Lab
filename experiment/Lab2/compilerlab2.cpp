@@ -14,6 +14,7 @@
 //            and nested parentheses;
 
 #include "LexicalAnalyzer.h"
+#include "LexicalAnalyzer.cpp"
 #include <fstream>
 #include <sstream>
 #include <cctype>
@@ -24,79 +25,73 @@
 #include <stack>
 using namespace std;
 
-// Define a struct to represent a token
-struct Token {
-    string type;
-    string value;
-};
-
 // Classify token types
-string classifier(const string& token) {
-    if (token == "int" || token == "return" || token == "main") {
-        return "keyword";
-    } else if (token == "=" || token == "+" || token == "-" || token == "*" || token == "/" || token == "(" || token == ")") {
-        return "operator";
-    } else if (token == ";") {
-        return "delimiter";
-    } else if (token.length() == 1 && isalpha(token[0])) {
-        return "identifier";
-    } else if (isdigit(token[0])) {
-        bool isConstant = true;
-        for (char c : token) {
-            if (!isdigit(c)) {
-                isConstant = false;
-                break;
-            }
-        }
-        if (isConstant) {
-            return "constant";
-        }
-    } else {
-        return "unknown type";
-    }
-} 
+// string classifier(const string& token) {
+//     if (token == "int" || token == "return" || token == "main") {
+//         return "keyword";
+//     } else if (token == "=" || token == "+" || token == "-" || token == "*" || token == "/" || token == "(" || token == ")") {
+//         return "operator";
+//     } else if (token == ";") {
+//         return "delimiter";
+//     } else if (token.length() == 1 && isalpha(token[0])) {
+//         return "identifier";
+//     } else if (isdigit(token[0])) {
+//         bool isConstant = true;
+//         for (char c : token) {
+//             if (!isdigit(c)) {
+//                 isConstant = false;
+//                 break;
+//             }
+//         }
+//         if (isConstant) {
+//             return "constant";
+//         }
+//     } else {
+//         return "unknown type";
+//     }
+// } 
 
 // Function to split the input source code into tokens
-vector<Token> tokenize(const string& sourceCode) {
-    vector<Token> tokens;
-    string currentToken;
-    string type;
+// vector<Token> tokenize(const string& sourceCode) {
+//     vector<Token> tokens;
+//     string currentToken;
+//     string type;
     
-    // Loop through each character in the source code
-    for (char c : sourceCode) {
-        // split the input source by space and newline
-        if (c == ' ' || c == '\n') {
-            // If the current token is not empty, add it to the list of tokens
-            if (!currentToken.empty()) {
-                type = classifier(currentToken);
-                if(type != "unknown type") {
-                    tokens.push_back({type, currentToken});
-                    currentToken.clear();
-                } else {
-                    cout << "Error! An unknown type word was input: " << currentToken << endl;
-                    exit(1);
-                }
-            }
-        } else {
-            // Append the character to the current token
-            currentToken += c;
-        }
-    }
+//     // Loop through each character in the source code
+//     for (char c : sourceCode) {
+//         // split the input source by space and newline
+//         if (c == ' ' || c == '\n') {
+//             // If the current token is not empty, add it to the list of tokens
+//             if (!currentToken.empty()) {
+//                 type = classifier(currentToken);
+//                 if(type != "unknown type") {
+//                     tokens.push_back({type, currentToken});
+//                     currentToken.clear();
+//                 } else {
+//                     cout << "Error! An unknown type word was input: " << currentToken << endl;
+//                     exit(1);
+//                 }
+//             }
+//         } else {
+//             // Append the character to the current token
+//             currentToken += c;
+//         }
+//     }
     
-    // Add the last token to the list of tokens
-    if (!currentToken.empty()) {
-        type = classifier(currentToken);
-        if(type != "unknown type") {
-            tokens.push_back({type, currentToken});
-            currentToken.clear();
-        } else {
-            cout << "Error! An unknown type word was input: " << currentToken << endl;
-            exit(1);
-        }
-    }
+//     // Add the last token to the list of tokens
+//     if (!currentToken.empty()) {
+//         type = classifier(currentToken);
+//         if(type != "unknown type") {
+//             tokens.push_back({type, currentToken});
+//             currentToken.clear();
+//         } else {
+//             cout << "Error! An unknown type word was input: " << currentToken << endl;
+//             exit(1);
+//         }
+//     }
     
-    return tokens;
-}
+//     return tokens;
+// }
 
 
 int priority(const string& op) {
@@ -205,7 +200,7 @@ string calculatePostfix(const vector<Token>& RPN, map<string, int> identifierMap
 }
 
 // Function to generate the tokens into assembly code
-string generateAssembly(const vector<Token>& tokens) {
+string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
     string assemblyCode;
     assemblyCode += "\n";
     int ptr = 0; // Pointer to the current token
@@ -320,6 +315,11 @@ string generateAssembly(const vector<Token>& tokens) {
 }
 
 int main(int argc, char* argv[]) {
+    if(argc != 2 || argv[1] == nullptr) {
+        cout << "ERROR! Usage: " << argv[0] << " <source file path>" << endl;
+        exit(1);
+    }
+
     // Read the source code from the file
     string filePath = argv[1];
     ifstream sourceFile(filePath);
@@ -337,16 +337,18 @@ int main(int argc, char* argv[]) {
     string assemblyCode = "";
     
     // Tokenize the source code
-    vector<Token> tokens = LexicalAnalyzer.analyse(sourceCode);
+    LexicalAnalyzer la;
+    vector<LexicalAnalyzer::Token> tokens = la.analyse(sourceCode);
     
     // Print the tokens
-    // for (const Token& token : tokens) {
-    //     cout << "Type: " << token.type << ", Value: " << token.value << endl;
-    // }
+    for (LexicalAnalyzer::Token &token : tokens) {
+        // la.printToken(token);
+        cout << "Type: " << token.type << ", Value: " << token.value << endl;
+    }
 
     // Generate the assembly code
-    assemblyCode = generateAssembly(tokens);
-    cout << assemblyCode << endl;
+    // assemblyCode = generateAssembly(tokens);
+    // cout << assemblyCode << endl;
     
     return 0;
 }

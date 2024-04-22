@@ -3,20 +3,12 @@
 
 #include <string>
 #include <cstdio>
+#include <vector>
 
 using namespace std;
 
 class LexicalAnalyzer {
-public:
-    LexicalAnalyzer();
-    ~LexicalAnalyzer();
-    void analyse(const string& input);
 private:
-    // Define a struct to represent a token
-    struct Token {
-        string type;
-        string value;
-    };
     bool IsKeyword(string word);
     bool IsFunction(string word);
     bool IsOperator(char ch);
@@ -31,6 +23,16 @@ private:
     char DELIMITER[5];
     char FILTER[4];
     string FUNCTION[1];
+public:
+    // Define a struct to represent a token
+    struct Token {
+        string type;
+        string value;
+    };
+    LexicalAnalyzer();
+    ~LexicalAnalyzer();
+    vector<Token> analyse(const string& input);
+    void printToken(const Token& token);
 };
 
 #endif // LEXICALANALYZER_H
