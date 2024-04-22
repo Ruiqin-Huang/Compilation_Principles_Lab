@@ -14,7 +14,7 @@
 //            and nested parentheses;
 
 #include "LexicalAnalyzer.h"
-#include "LexicalAnalyzer.cpp"
+// #include "LexicalAnalyzer.cpp"
 #include <fstream>
 #include <sstream>
 #include <cctype>
@@ -421,9 +421,9 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
 
                         // Step 1: Convert the infix expression to a postfix expression. 
                         vector<LexicalAnalyzer::Token> RPN = infixToPostfix(tokens, ptr_expression);
-                        for (const LexicalAnalyzer::Token& token : RPN) {
-                            cout << "Type: " << token.type << ", Value: " << token.value << endl;
-                        }
+                        // for (const LexicalAnalyzer::Token& token : RPN) {
+                        //     cout << "Type: " << token.type << ", Value: " << token.value << endl;
+                        // }
 
                         // Step 2: Calculate the postfix expression and output the calculation process in assembly language.
                         string expression_asm = calculatePostfix(RPN, identifierMap);
@@ -554,7 +554,7 @@ int main(int argc, char* argv[]) {
 
     // Generate the assembly code
     assemblyCode = generateAssembly(tokens);
-    // cout << assemblyCode << endl;
+    cout << assemblyCode << endl;
     
     return 0;
 }
