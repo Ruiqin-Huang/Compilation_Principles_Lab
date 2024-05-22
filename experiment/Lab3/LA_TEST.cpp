@@ -9,7 +9,18 @@ using namespace std;
 int main() {
     LexicalAnalyzer la;
     // read fpin to string 
-    ifstream sourceFile("LA_TEST.txt");
+
+    // input sourceFile
+    string filePath;
+    cout << "Enter the path of the input source file: ";
+    cin >> filePath;
+
+    ifstream sourceFile(filePath);
+    if (!sourceFile) {
+        cout << "Error opening file!" << endl;
+        return 1;
+    }
+    // ifstream sourceFile("LA_TEST.txt");
 
     stringstream buffer;
     buffer << sourceFile.rdbuf();

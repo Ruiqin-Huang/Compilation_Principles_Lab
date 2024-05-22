@@ -2,13 +2,13 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>E:\CODE\git_repositories\Compilation_Principles_Lab\Compilation_Principles_Lab\experiment\Lab2\build\x64\Debug\ZERO_CHECK</FullPath>
+      <FullPath>E:\CODE\git_repositories\Compilation_Principles_Lab\Compilation_Principles_Lab\experiment\Lab3\build\x64\Debug\ZERO_CHECK</FullPath>
     </ProjectOutput>
     <ProjectOutput>
-      <FullPath>E:\CODE\git_repositories\Compilation_Principles_Lab\Compilation_Principles_Lab\experiment\Lab2\build\Debug\Compilerlab2.exe</FullPath>
+      <FullPath>E:\CODE\git_repositories\Compilation_Principles_Lab\Compilation_Principles_Lab\experiment\Lab3\build\Debug\Compilerlab3.exe</FullPath>
     </ProjectOutput>
     <ProjectOutput>
-      <FullPath>E:\CODE\git_repositories\Compilation_Principles_Lab\Compilation_Principles_Lab\experiment\Lab2\build\x64\Debug\ALL_BUILD</FullPath>
+      <FullPath>E:\CODE\git_repositories\Compilation_Principles_Lab\Compilation_Principles_Lab\experiment\Lab3\build\x64\Debug\ALL_BUILD</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

@@ -1,5 +1,5 @@
 int main(int argc, int _argv) { 
-    int a; 
+    int adasa; 
     int b; 
     int c; 
     a = 1; 
