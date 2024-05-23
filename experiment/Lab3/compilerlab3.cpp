@@ -41,6 +41,8 @@ stack<map<string, int>> VariableidentifierMapStack;
 int scopeDepth = 0;
 // scopeDepth = 1 represents global scope
 
+int jump_label = 0;
+
 // indicate one function has ended
 int function_has_ended = 0;
 
@@ -105,7 +107,7 @@ int priority(const string& op, bool isUnary = false) {
     if (op == "!" || op == "~" )
         return 10;
     // "-" has two kinds of priority
-    if (op == "-"){
+    if (op == "-" || op == "unary_minus_sign" || op == "binary_minus_sign") {
         if (isUnary)
             return 10;
         else
@@ -468,15 +470,33 @@ string calculatePostfix(const vector<LexicalAnalyzer::Token>& RPN, map<string, i
                     expression_asm += "\n";
                     expression_asm += "   pop ebx\n";
                     expression_asm += "   pop eax\n";
-                    expression_asm += "   and eax, ebx\n";
+                    expression_asm += "   cmp eax, 0\n";
+                    expression_asm += "   je .Lfalse" + to_string(jump_label) + "\n";
+                    expression_asm += "   cmp ebx, 0\n";
+                    expression_asm += "   je .Lfalse" + to_string(jump_label) + "\n";
+                    expression_asm += "   mov eax, 1\n";
+                    expression_asm += "   jmp .Lend" + to_string(jump_label) + "\n";
+                    expression_asm += ".Lfalse" + to_string(jump_label) + ":\n";
+                    expression_asm += "   mov eax, 0\n";
+                    expression_asm += ".Lend" + to_string(jump_label) + ":\n";
                     expression_asm += "   push eax\n";
+                    jump_label++;
                 } else if (token.value == "||") {
                     oprands.push({"Intermediate results", "x"});
                     expression_asm += "\n";
                     expression_asm += "   pop ebx\n";
                     expression_asm += "   pop eax\n";
-                    expression_asm += "   or eax, ebx\n";
+                    expression_asm += "   cmp eax, 0\n";
+                    expression_asm += "   jne .Ltrue" + to_string(jump_label) + "\n";
+                    expression_asm += "   cmp ebx, 0\n";
+                    expression_asm += "   jne .Ltrue" + to_string(jump_label) + "\n";
+                    expression_asm += "   mov eax, 0\n";
+                    expression_asm += "   jmp .Lend" + to_string(jump_label) + "\n";
+                    expression_asm += ".Ltrue" + to_string(jump_label) + ":\n";
+                    expression_asm += "   mov eax, 1\n";
+                    expression_asm += ".Lend" + to_string(jump_label) + ":\n";
                     expression_asm += "   push eax\n";
+                    jump_label++;
                 }
             }
         }
@@ -1015,6 +1035,9 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
     // assemblyCode += "\n   mov eax, 0\n";
     // assemblyCode += "   leave\n";
     // assemblyCode += "   ret\n";
+
+    // add \n
+    assemblyCode += "\n";
 
     return assemblyCode;
 }

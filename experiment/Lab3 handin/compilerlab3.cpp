@@ -41,6 +41,8 @@ stack<map<string, int>> VariableidentifierMapStack;
 int scopeDepth = 0;
 // scopeDepth = 1 represents global scope
 
+int jump_label = 0;
+
 // indicate one function has ended
 int function_has_ended = 0;
 
@@ -105,7 +107,7 @@ int priority(const string& op, bool isUnary = false) {
     if (op == "!" || op == "~" )
         return 10;
     // "-" has two kinds of priority
-    if (op == "-"){
+    if (op == "-" || op == "unary_minus_sign" || op == "binary_minus_sign") {
         if (isUnary)
             return 10;
         else
@@ -150,7 +152,7 @@ vector<LexicalAnalyzer::Token> infixToPostfix(const vector<LexicalAnalyzer::Toke
             ops.push(make_pair(tokens[ptr], true));
         } else if (tokens[ptr].type == "Operator" && (tokens[ptr].value == "-")) {
             // If the token is "-" Operator, which has two kinds of priority
-            if (tokens[ptr-1].type == "Operator" || (tokens[ptr-1].type == "Delimiter" && tokens[ptr-1].value == "(") || tokens[ptr-1].type == "Keyword") {
+            if (tokens[ptr-1].type == "Operator" || (tokens[ptr-1].type == "Delimiter" && (tokens[ptr-1].value == "(" || tokens[ptr-1].value == ",")) || tokens[ptr-1].type == "Keyword") {
                 // If the token is a unary Operator
                 while (!ops.empty() && priority((ops.top()).first.value, (ops.top()).second) >= priority(tokens[ptr].value, true)) {
                     RPN.push_back(ops.top().first);
@@ -310,154 +312,192 @@ string calculatePostfix(const vector<LexicalAnalyzer::Token>& RPN, map<string, i
             }
             expression_asm += "   push eax\n";
         } else if (token.type == "Operator") {
-            LexicalAnalyzer::Token oprand2 = oprands.top();
-            oprands.pop();
-            LexicalAnalyzer::Token oprand1 = oprands.top();
-            oprands.pop();
-            if (token.value == "+") {
+            if (token.value == "unary_minus_sign") {
+                LexicalAnalyzer::Token oprand = oprands.top();
+                oprands.pop();
                 oprands.push({"Intermediate results", "x"});
                 expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
                 expression_asm += "   pop eax\n";
-                expression_asm += "   add eax, ebx\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "binary_minus_sign") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   sub eax, ebx\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "*") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   imul eax, ebx\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "/") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   cdq\n";
-                expression_asm += "   idiv ebx\n";
-                expression_asm += "   push eax\n";
-            } else if(token.value == "%") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   cdq\n";
-                expression_asm += "   idiv ebx\n";
-                expression_asm += "   push edx\n";
-            } else if (token.value == "<") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   cmp eax, ebx\n";
-                expression_asm += "   setl al\n";
-                expression_asm += "   movzx eax, al\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "<=") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   cmp eax, ebx\n";
-                expression_asm += "   setle al\n";
-                expression_asm += "   movzx eax, al\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == ">") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   cmp eax, ebx\n";
-                expression_asm += "   setg al\n";
-                expression_asm += "   movzx eax, al\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == ">=") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   cmp eax, ebx\n";
-                expression_asm += "   setge al\n";
-                expression_asm += "   movzx eax, al\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "==") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   cmp eax, ebx\n";
-                expression_asm += "   sete al\n";
-                expression_asm += "   movzx eax, al\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "!=") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   cmp eax, ebx\n";
-                expression_asm += "   setne al\n";
-                expression_asm += "   movzx eax, al\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "&") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   and eax, ebx\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "|") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   or eax, ebx\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "^") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   xor eax, ebx\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "&&") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   and eax, ebx\n";
-                expression_asm += "   push eax\n";
-            } else if (token.value == "||") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop ebx\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   or eax, ebx\n";
+                expression_asm += "   neg eax\n";
                 expression_asm += "   push eax\n";
             } else if (token.value == "!") {
+                LexicalAnalyzer::Token oprand = oprands.top();
+                oprands.pop();
                 oprands.push({"Intermediate results", "x"});
                 expression_asm += "\n";
                 expression_asm += "   pop eax\n";
-                expression_asm += "   not eax\n";
+                
+                // expression_asm += "   test eax, eax\n";  // Perform bitwise AND operation
+                // expression_asm += "   setz al\n";  // Set AL to 1 if zero flag is set, otherwise set it to 0
+                // expression_asm += "   movzx eax, al\n";  // Zero-extend AL to EAX
+                // expression_asm += "   push eax\n";
+
+                expression_asm += "   cmp eax, 0\n";  // Compare eax with 0
+                expression_asm += "   sete al\n";     // Set AL (lower byte of EAX) to 1 if equal (i.e., if eax was 0)
+                expression_asm += "   movzx eax, al\n"; // Zero-extend AL to EAX
+                
                 expression_asm += "   push eax\n";
+
             } else if (token.value == "~") {
+                LexicalAnalyzer::Token oprand = oprands.top();
+                oprands.pop();
                 oprands.push({"Intermediate results", "x"});
                 expression_asm += "\n";
                 expression_asm += "   pop eax\n";
                 expression_asm += "   neg eax\n";
+                expression_asm += "   dec eax\n";
                 expression_asm += "   push eax\n";
-            } else if (token.value == "unary_minus_sign") {
-                oprands.push({"Intermediate results", "x"});
-                expression_asm += "\n";
-                expression_asm += "   pop eax\n";
-                expression_asm += "   neg eax\n";
-                expression_asm += "   push eax\n";
+            } else {
+                LexicalAnalyzer::Token oprand2 = oprands.top();
+                oprands.pop();
+                LexicalAnalyzer::Token oprand1 = oprands.top();
+                oprands.pop();
+
+                if (token.value == "+") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   add eax, ebx\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "binary_minus_sign") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   sub eax, ebx\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "*") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   imul eax, ebx\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "/") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cdq\n";
+                    expression_asm += "   idiv ebx\n";
+                    expression_asm += "   push eax\n";
+                } else if(token.value == "%") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cdq\n";
+                    expression_asm += "   idiv ebx\n";
+                    expression_asm += "   push edx\n";
+                } else if (token.value == "<") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cmp eax, ebx\n";
+                    expression_asm += "   setl al\n";
+                    expression_asm += "   movzx eax, al\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "<=") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cmp eax, ebx\n";
+                    expression_asm += "   setle al\n";
+                    expression_asm += "   movzx eax, al\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == ">") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cmp eax, ebx\n";
+                    expression_asm += "   setg al\n";
+                    expression_asm += "   movzx eax, al\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == ">=") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cmp eax, ebx\n";
+                    expression_asm += "   setge al\n";
+                    expression_asm += "   movzx eax, al\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "==") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cmp eax, ebx\n";
+                    expression_asm += "   sete al\n";
+                    expression_asm += "   movzx eax, al\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "!=") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cmp eax, ebx\n";
+                    expression_asm += "   setne al\n";
+                    expression_asm += "   movzx eax, al\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "&") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   and eax, ebx\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "|") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   or eax, ebx\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "^") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   xor eax, ebx\n";
+                    expression_asm += "   push eax\n";
+                } else if (token.value == "&&") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cmp eax, 0\n";
+                    expression_asm += "   je .Lfalse" + to_string(jump_label) + "\n";
+                    expression_asm += "   cmp ebx, 0\n";
+                    expression_asm += "   je .Lfalse" + to_string(jump_label) + "\n";
+                    expression_asm += "   mov eax, 1\n";
+                    expression_asm += "   jmp .Lend" + to_string(jump_label) + "\n";
+                    expression_asm += ".Lfalse" + to_string(jump_label) + ":\n";
+                    expression_asm += "   mov eax, 0\n";
+                    expression_asm += ".Lend" + to_string(jump_label) + ":\n";
+                    expression_asm += "   push eax\n";
+                    jump_label++;
+                } else if (token.value == "||") {
+                    oprands.push({"Intermediate results", "x"});
+                    expression_asm += "\n";
+                    expression_asm += "   pop ebx\n";
+                    expression_asm += "   pop eax\n";
+                    expression_asm += "   cmp eax, 0\n";
+                    expression_asm += "   jne .Ltrue" + to_string(jump_label) + "\n";
+                    expression_asm += "   cmp ebx, 0\n";
+                    expression_asm += "   jne .Ltrue" + to_string(jump_label) + "\n";
+                    expression_asm += "   mov eax, 0\n";
+                    expression_asm += "   jmp .Lend" + to_string(jump_label) + "\n";
+                    expression_asm += ".Ltrue" + to_string(jump_label) + ":\n";
+                    expression_asm += "   mov eax, 1\n";
+                    expression_asm += ".Lend" + to_string(jump_label) + ":\n";
+                    expression_asm += "   push eax\n";
+                    jump_label++;
+                }
             }
         }
     }
@@ -560,8 +600,13 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
 
                     if (tokens[ptr].value == "int") {
                         assemblyCode += ".data\n";
-                        assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
                         
+                        // it is nasm syntax
+                        // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
+                        
+                        // we should use gas syntax
+                        assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
+
                         string return_value = tokens[ptr + 1].value + "_return_value";
 
                         addGlobalIdentifier(return_value);
@@ -608,8 +653,13 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
 
                         if (tokens[ptr].value == "int") {
                             assemblyCode += ".data\n";
-                            assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
                             
+                            // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
+                            
+                            // use gas syntax
+                            assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
+
+
                             string return_value = tokens[ptr + 1].value + "_return_value";
 
                             addGlobalIdentifier(return_value);
@@ -648,7 +698,14 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                                     addVariableidentifier(tokens[ptr].value);
 
                                     // pass the parameters
-                                    assemblyCode += "   mov DWORD PTR [ebp-" + to_string(VariableidentifierMapStack.top()[tokens[ptr].value] * 4 + 4) + "], DWORD PTR [ebp+" + to_string(parameters_num * 4 + 8) + "]\n";
+                                    
+                                    // wrong! can't move memory to memory
+                                    // assemblyCode += "   mov DWORD PTR [ebp-" + to_string(VariableidentifierMapStack.top()[tokens[ptr].value] * 4 + 4) + "], DWORD PTR [ebp+" + to_string(parameters_num * 4 + 8) + "]\n";
+                                    
+                                    // use eax to pass
+                                    assemblyCode += "   mov eax, DWORD PTR [ebp+" + to_string(parameters_num * 4 + 8) + "]\n";
+                                    assemblyCode += "   mov DWORD PTR [ebp-" + to_string(VariableidentifierMapStack.top()[tokens[ptr].value] * 4 + 4) + "], eax\n";
+                                    
                                     parameters_num++;
 
                                     ptr++;
@@ -978,6 +1035,9 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
     // assemblyCode += "\n   mov eax, 0\n";
     // assemblyCode += "   leave\n";
     // assemblyCode += "   ret\n";
+
+    // add \n
+    assemblyCode += "\n";
 
     return assemblyCode;
 }
