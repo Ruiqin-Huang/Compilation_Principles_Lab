@@ -344,8 +344,7 @@ string calculatePostfix(const vector<LexicalAnalyzer::Token>& RPN, map<string, i
                 oprands.push({"Intermediate results", "x"});
                 expression_asm += "\n";
                 expression_asm += "   pop eax\n";
-                expression_asm += "   neg eax\n";
-                expression_asm += "   dec eax\n";
+                expression_asm += "   not eax\n";
                 expression_asm += "   push eax\n";
             } else {
                 LexicalAnalyzer::Token oprand2 = oprands.top();
