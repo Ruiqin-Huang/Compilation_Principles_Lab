@@ -1,0 +1,10 @@
+^E:\CODE\GIT_REPOSITORIES\COMPILATION_PRINCIPLES_LAB\COMPILATION_PRINCIPLES_LAB\EXPERIMENT\LAB4\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/CODE/git_repositories/Compilation_Principles_Lab/Compilation_Principles_Lab/experiment/Lab4 -BE:/CODE/git_repositories/Compilation_Principles_Lab/Compilation_Principles_Lab/experiment/Lab4/build --check-stamp-file E:/CODE/git_repositories/Compilation_Principles_Lab/Compilation_Principles_Lab/experiment/Lab4/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

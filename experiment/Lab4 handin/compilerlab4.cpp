@@ -4,7 +4,7 @@
 // Class: 07112103
 
 // The grammar that the primitive compiler can handle is as follows: 
-// Keywords: int, return, main, void
+// Keywords: int, return, main, void, if, else, while, continue, break 
 // Identifier: C89(start with a letter or _, followed by letters or digits or _)
 // Constants: Decimal integers, such as 1, 223, 10, etc
 // Operators: =, -, !, ~, +, -, *, /, %, <, <=, >, >=, ==, !=, &, |, ^, &&, ||
@@ -24,6 +24,7 @@
 #include <vector>
 #include <map>
 #include <stack>
+#include <utility>
 using namespace std;
 
 // Establish a return value map to indicate the return value types of each function
@@ -42,6 +43,11 @@ int scopeDepth = 0;
 // scopeDepth = 1 represents global scope
 
 int jump_label = 0;
+
+int if_else_label = 0;
+int while_label = 0;
+
+stack<pair<string, int>> if_while_stack;
 
 // indicate one function has ended
 int function_has_ended = 0;
@@ -594,22 +600,22 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                     // add identifier to the current scope
                     addFunctionidentifier(tokens[ptr + 1].value, tokens[ptr].value);
 
-                    assemblyCode += "\n";
-                    assemblyCode += ".global " + tokens[ptr + 1].value + "\n";
+                    // assemblyCode += "\n";
+                    // assemblyCode += ".global " + tokens[ptr + 1].value + "\n";
 
-                    if (tokens[ptr].value == "int") {
-                        assemblyCode += ".data\n";
+                    // if (tokens[ptr].value == "int") {
+                    //     assemblyCode += ".data\n";
                         
-                        // it is nasm syntax
-                        // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
+                    //     // it is nasm syntax
+                    //     // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
                         
-                        // we should use gas syntax
-                        assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
+                    //     // we should use gas syntax
+                    //     assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
 
-                        string return_value = tokens[ptr + 1].value + "_return_value";
+                    //     string return_value = tokens[ptr + 1].value + "_return_value";
 
-                        addGlobalIdentifier(return_value);
-                    }
+                    //     addGlobalIdentifier(return_value);
+                    // }
 
                     assemblyCode += ".text\n";
 
@@ -792,6 +798,71 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
 
                 // function_has_ended = 1;
 
+            } else if (tokens[ptr].value == "if") {
+                assemblyCode += "\n";
+                ptr+=2; // ptr points to start of the expression
+
+                ptr += caculate_expression(tokens, ptr, assemblyCode);
+
+                assemblyCode += "   pop eax\n";\
+                assemblyCode += "   cmp eax, 0\n";
+                assemblyCode += "   je .L_if_end_" + to_string(if_else_label) + "\n";
+                assemblyCode += "\n";
+
+                if_while_stack.push(make_pair("if", if_else_label));
+
+                if_else_label++;
+
+                ptr++; // points to "{"
+
+            } else if (tokens[ptr].value == "else") {
+                ptr++; // points to "{" or "if"
+            } else if (tokens[ptr].value == "while") {
+                assemblyCode += "\n";
+                assemblyCode += ".L_while_cond_" + to_string(while_label) + ":\n";
+
+                ptr+=2; // ptr points to start of the expression
+
+                ptr += caculate_expression(tokens, ptr, assemblyCode);
+
+                assemblyCode += "   pop eax\n";
+                assemblyCode += "   cmp eax, 0\n";
+                assemblyCode += "   je .L_while_end_" + to_string(while_label) + "\n";
+                assemblyCode += "\n";
+
+                if_while_stack.push(make_pair("while", while_label));
+
+                while_label++;
+
+                ptr++; // points to "{"
+            } else if (tokens[ptr].value == "continue") {
+                assemblyCode += "\n";
+                if (if_while_stack.empty()) {
+                    cout << "ERROR! Continue statement is not in a loop." << endl;
+                    exit(1);
+                }
+                if (if_while_stack.top().first == "while") {
+                    assemblyCode += "   jmp .L_while_cond_" + to_string(if_while_stack.top().second) + "\n";
+                } else {
+                    cout << "ERROR! Continue statement is not in a loop." << endl;
+                    exit(1);
+                }
+                assemblyCode += "\n";
+                ptr++; // points to ";"
+            } else if (tokens[ptr].value == "break") {
+                assemblyCode += "\n";
+                if (if_while_stack.empty()) {
+                    cout << "ERROR! Break statement is not in a loop." << endl;
+                    exit(1);
+                }
+                if (if_while_stack.top().first == "while") {
+                    assemblyCode += "   jmp .L_while_end_" + to_string(if_while_stack.top().second) + "\n";
+                } else {
+                    cout << "ERROR! Break statement is not in a loop." << endl;
+                    exit(1);
+                }
+                assemblyCode += "\n";
+                ptr++; // points to ";"
             } else {
                 cout << "ERROR! Unknown Keyword: " << tokens[ptr].value << endl;
                 exit(1);
@@ -946,7 +1017,23 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                 ptr++;
             } else if (tokens[ptr].value == "{") {
                 ptr++;
-            } else if (tokens[ptr].value == "}") {
+            } else if (tokens[ptr].value == "}" && if_while_stack.size() > 0) {
+                // end of if or while
+                if (if_while_stack.top().first == "if") {
+                    // end of if
+                    assemblyCode += ".L_if_end_" + to_string(if_while_stack.top().second) + ":\n";
+                    if_while_stack.pop();
+                    ptr++;
+                } else {
+                    // end of while
+                    assemblyCode += "   jmp .L_while_cond_" + to_string(if_while_stack.top().second) + "\n";
+
+                    assemblyCode += ".L_while_end_" + to_string(if_while_stack.top().second) + ":\n";
+                    if_while_stack.pop();
+                    ptr++;
+                }
+                
+            } else if (tokens[ptr].value == "}" && if_while_stack.size() == 0) {
                 // end of function
                 string inWhatFunction = inFuctionWhat.top();
                 if (FuctionReturnValueMap[inWhatFunction] == "void") {
