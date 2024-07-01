@@ -15,7 +15,7 @@ fibonacci_return_value:
 fibonacci:
    push ebp
    mov ebp, esp
-   sub esp, 0x200
+   sub esp, 0x400
    mov eax, DWORD PTR [ebp+8]
    mov DWORD PTR [ebp-4], eax
 
@@ -91,7 +91,7 @@ fibonacci:
    push eax
    call fibonacci
    add esp, 4
-   mov fibonacci_return_value, eax
+   mov DWORD PTR [ebp-12], eax
 
    mov eax, DWORD PTR [ebp-4]
    push eax
@@ -107,12 +107,12 @@ fibonacci:
    push eax
    call fibonacci
    add esp, 4
-   mov fibonacci_return_value, eax
+   mov DWORD PTR [ebp-16], eax
 
-   mov eax, fibonacci_return_value
+   mov eax, DWORD PTR [ebp-12]
    push eax
 
-   mov eax, fibonacci_return_value
+   mov eax, DWORD PTR [ebp-16]
    push eax
 
    pop ebx
@@ -148,7 +148,7 @@ main_return_value:
 main:
    push ebp
    mov ebp, esp
-   sub esp, 0x200
+   sub esp, 0x400
 
    mov eax, 5
    push eax
@@ -161,9 +161,9 @@ main:
    push eax
    call fibonacci
    add esp, 4
-   mov fibonacci_return_value, eax
+   mov DWORD PTR [ebp-8], eax
 
-   mov eax, fibonacci_return_value
+   mov eax, DWORD PTR [ebp-8]
    push eax
    pop eax
    push eax

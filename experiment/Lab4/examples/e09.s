@@ -15,11 +15,29 @@ gcd_return_value:
 gcd:
    push ebp
    mov ebp, esp
-   sub esp, 0x200
+   sub esp, 0x400
    mov eax, DWORD PTR [ebp+8]
    mov DWORD PTR [ebp-4], eax
    mov eax, DWORD PTR [ebp+12]
    mov DWORD PTR [ebp-8], eax
+
+   mov eax, DWORD PTR [ebp-4]
+   push eax
+   pop eax
+   push eax
+   push offset format_str
+   call printf
+   add esp, 8
+
+
+   mov eax, DWORD PTR [ebp-8]
+   push eax
+   pop eax
+   push eax
+   push offset format_str
+   call printf
+   add esp, 8
+
 
 
    mov eax, DWORD PTR [ebp-8]
@@ -50,6 +68,37 @@ gcd:
 .L_if_end_0:
 
 
+   mov eax, DWORD PTR [ebp-4]
+   push eax
+
+   mov eax, DWORD PTR [ebp-8]
+   push eax
+
+   pop ebx
+   pop eax
+   cdq
+   idiv ebx
+   push edx
+   pop eax
+   push eax
+
+   mov eax, DWORD PTR [ebp-8]
+   push eax
+   pop eax
+   push eax
+   call gcd
+   add esp, 8
+   mov DWORD PTR [ebp-12], eax
+
+   mov eax, DWORD PTR [ebp-12]
+   push eax
+   pop eax
+   push eax
+   push offset format_str
+   call printf
+   add esp, 8
+
+
 
    mov eax, DWORD PTR [ebp-4]
    push eax
@@ -71,9 +120,9 @@ gcd:
    push eax
    call gcd
    add esp, 8
-   mov gcd_return_value, eax
+   mov DWORD PTR [ebp-16], eax
 
-   mov eax, gcd_return_value
+   mov eax, DWORD PTR [ebp-16]
    push eax
 
    pop eax
@@ -89,14 +138,14 @@ main_return_value:
 main:
    push ebp
    mov ebp, esp
-   sub esp, 0x200
+   sub esp, 0x400
 
-   mov eax, 48
+   mov eax, 7
    push eax
    pop eax
    mov DWORD PTR [ebp-4], eax
 
-   mov eax, 18
+   mov eax, 13
    push eax
    pop eax
    mov DWORD PTR [ebp-8], eax
@@ -112,9 +161,9 @@ main:
    push eax
    call gcd
    add esp, 8
-   mov gcd_return_value, eax
+   mov DWORD PTR [ebp-16], eax
 
-   mov eax, gcd_return_value
+   mov eax, DWORD PTR [ebp-16]
    push eax
    pop eax
    mov DWORD PTR [ebp-12], eax

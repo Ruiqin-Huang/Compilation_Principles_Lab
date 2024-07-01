@@ -1,4 +1,4 @@
-// Lab 3: compilerlab3
+// Lab 4: compilerlab4
 // Name: Huang Ruiqin
 // ID: 1120211809
 // Class: 07112103
@@ -32,6 +32,9 @@ using namespace std;
 
 // create VariableidentifierMapStack to store identifier in different scope
 map<string, int> GlobalIdentifierMap;
+
+int return_value_label = 0;
+
 map<string, int> UserDefinedFunctionMap;
 map<string, string> FuctionReturnValueMap;
 
@@ -188,6 +191,8 @@ vector<LexicalAnalyzer::Token> infixToPostfix(const vector<LexicalAnalyzer::Toke
                 
                 string function_name = tokens[ptr].value;
 
+                int function_name_ptr = ptr;
+
                 ptr+=2; // ptr points to first parameter
 
                 // start to push parameters into stack
@@ -254,9 +259,21 @@ vector<LexicalAnalyzer::Token> infixToPostfix(const vector<LexicalAnalyzer::Toke
                     // restore esp
                     assemblyCode += "   add esp, " + to_string(parameter_num * 4) + "\n";
 
+                    string return_value_name = function_name + "_return_value_" + to_string(return_value_label);
+                    
+                    // function_return_value is a local variable, move the return value eax to local variable
+                    // add identifier to the current scope
+                    addVariableidentifier(return_value_name);
+
+                    // store the result in the variable
+                    assemblyCode += "   mov DWORD PTR [ebp-" + to_string(VariableidentifierMapStack.top()[return_value_name] * 4 + 4) + "], eax\n";
+
+                    // return_value_label++;
+
                     // function_name is a global variable, move the return value eax to global variable
-                    string return_value = function_name + "_return_value";
-                    assemblyCode += "   mov " + return_value + ", eax\n";
+                    // string return_value = function_name + "_return_value_" + to_string(return_value_label);
+                    // return_value_label++;
+                    // assemblyCode += "   mov " + return_value + ", eax\n";
                     ptr = function_end;
                     
                     // // move pointer to next token in expression
@@ -265,17 +282,31 @@ vector<LexicalAnalyzer::Token> infixToPostfix(const vector<LexicalAnalyzer::Toke
                     // if parameters is empty
                     // call the function without parameters
                     assemblyCode += "   call " + function_name + "\n";
+                    
+                    string return_value_name = function_name + "_return_value_" + to_string(return_value_label);
+
+                    // function_return_value is a local variable, move the return value eax to local variable
+                    // add identifier to the current scope
+                    addVariableidentifier(return_value_name);
+
+                    // store the result in the variable
+                    assemblyCode += "   mov DWORD PTR [ebp-" + to_string(VariableidentifierMapStack.top()[return_value_name] * 4 + 4) + "], eax\n";
+
+                    // return_value_label++;
+
                     // function_name is a global variable, move the return value eax to global variable
-                    string return_value = function_name + "_return_value";
-                    assemblyCode += "   mov" + return_value + ", eax\n";
+                    
+                    // string return_value = function_name + "_return_value_" + to_string(return_label);
+                    // return_label++;
+                    // assemblyCode += "   mov" + return_value + ", eax\n";
 
                     // // move pointer to next token in expression
                     // ptr++;
-                }
-
-                string return_value = function_name + "_return_value";
+                }   
+                string return_value_name = function_name + "_return_value_"+ to_string(return_value_label);
                 // push function return value into RPN
-                RPN.push_back({"Identifier", return_value});
+                RPN.push_back({"Identifier", return_value_name});
+                return_value_label++;
             } else {
                 // If the token is an variable Identifier
                 RPN.push_back(tokens[ptr]);
@@ -603,19 +634,19 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                     assemblyCode += "\n";
                     assemblyCode += ".global " + tokens[ptr + 1].value + "\n";
 
-                    if (tokens[ptr].value == "int") {
-                        assemblyCode += ".data\n";
+                    // if (tokens[ptr].value == "int") {
+                    //     assemblyCode += ".data\n";
                         
-                        // it is nasm syntax
-                        // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
+                    //     // it is nasm syntax
+                    //     // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
                         
-                        // we should use gas syntax
-                        assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
+                    //     // we should use gas syntax
+                    //     assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
 
-                        string return_value = tokens[ptr + 1].value + "_return_value";
+                    //     string return_value = tokens[ptr + 1].value + "_return_value";
 
-                        addGlobalIdentifier(return_value);
-                    }
+                    //     addGlobalIdentifier(return_value);
+                    // }
 
                     assemblyCode += ".text\n";
 
@@ -630,7 +661,7 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                     assemblyCode += "   push ebp\n";
                     assemblyCode += "   mov ebp, esp\n";
                     // allocate 512 bytes of memory for main 
-                    assemblyCode += "   sub esp, 0x200\n";
+                    assemblyCode += "   sub esp, 0x400\n";
 
                     // push all function in stack<map<string, int>> FunctionidentifierMapStack as a variable
                     // for (const auto& function : FunctionidentifierMapStack.top()) {
@@ -655,20 +686,19 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                         assemblyCode += "\n";
                         assemblyCode += ".global " + tokens[ptr + 1].value + "\n";
                         
-
-                        if (tokens[ptr].value == "int") {
-                            assemblyCode += ".data\n";
+                        // if (tokens[ptr].value == "int") {
+                        //     assemblyCode += ".data\n";
                             
-                            // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
+                        //     // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
                             
-                            // use gas syntax
-                            assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
+                        //     // use gas syntax
+                        //     assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
 
 
-                            string return_value = tokens[ptr + 1].value + "_return_value";
+                        //     string return_value = tokens[ptr + 1].value + "_return_value";
 
-                            addGlobalIdentifier(return_value);
-                        }
+                        //     addGlobalIdentifier(return_value);
+                        // }
 
                         assemblyCode += ".text\n";
 
@@ -681,7 +711,7 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                         assemblyCode += "   push ebp\n";
                         assemblyCode += "   mov ebp, esp\n";
                         // allocate 512 bytes of memory for the function
-                        assemblyCode += "   sub esp, 0x200\n";
+                        assemblyCode += "   sub esp, 0x400\n";
                         ptr += 3;
 
                         // scan and get parameters
