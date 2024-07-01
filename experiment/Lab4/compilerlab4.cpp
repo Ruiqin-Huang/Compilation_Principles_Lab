@@ -600,22 +600,22 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                     // add identifier to the current scope
                     addFunctionidentifier(tokens[ptr + 1].value, tokens[ptr].value);
 
-                    // assemblyCode += "\n";
-                    // assemblyCode += ".global " + tokens[ptr + 1].value + "\n";
+                    assemblyCode += "\n";
+                    assemblyCode += ".global " + tokens[ptr + 1].value + "\n";
 
-                    // if (tokens[ptr].value == "int") {
-                    //     assemblyCode += ".data\n";
+                    if (tokens[ptr].value == "int") {
+                        assemblyCode += ".data\n";
                         
-                    //     // it is nasm syntax
-                    //     // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
+                        // it is nasm syntax
+                        // assemblyCode += tokens[ptr + 1].value + "_return_value " + "dd 0\n";
                         
-                    //     // we should use gas syntax
-                    //     assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
+                        // we should use gas syntax
+                        assemblyCode += tokens[ptr + 1].value + "_return_value:\n" + "    .int 0\n";
 
-                    //     string return_value = tokens[ptr + 1].value + "_return_value";
+                        string return_value = tokens[ptr + 1].value + "_return_value";
 
-                    //     addGlobalIdentifier(return_value);
-                    // }
+                        addGlobalIdentifier(return_value);
+                    }
 
                     assemblyCode += ".text\n";
 
