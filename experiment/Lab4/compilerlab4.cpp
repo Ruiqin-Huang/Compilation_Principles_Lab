@@ -816,6 +816,10 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                 ptr++; // points to "{"
 
             } else if (tokens[ptr].value == "else") {
+                
+                assemblyCode += "\n";
+                if_while_stack.push(make_pair("else", -1));
+
                 ptr++; // points to "{" or "if"
             } else if (tokens[ptr].value == "while") {
                 assemblyCode += "\n";
@@ -841,12 +845,19 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                     cout << "ERROR! Continue statement is not in a loop." << endl;
                     exit(1);
                 }
-                if (if_while_stack.top().first == "while") {
-                    assemblyCode += "   jmp .L_while_cond_" + to_string(if_while_stack.top().second) + "\n";
-                } else {
-                    cout << "ERROR! Continue statement is not in a loop." << endl;
-                    exit(1);
+
+                stack<pair<string, int>> if_while_stack_copy = if_while_stack;
+
+                while (if_while_stack_copy.top().first != "while") {
+                    if_while_stack_copy.pop();
+                    if (if_while_stack_copy.empty()) {
+                        cout << "ERROR! Continue statement is not in a loop." << endl;
+                        exit(1);
+                    }
                 }
+
+                assemblyCode += "   jmp .L_while_cond_" + to_string(if_while_stack_copy.top().second) + "\n";
+                
                 assemblyCode += "\n";
                 ptr++; // points to ";"
             } else if (tokens[ptr].value == "break") {
@@ -855,12 +866,19 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                     cout << "ERROR! Break statement is not in a loop." << endl;
                     exit(1);
                 }
-                if (if_while_stack.top().first == "while") {
-                    assemblyCode += "   jmp .L_while_end_" + to_string(if_while_stack.top().second) + "\n";
-                } else {
-                    cout << "ERROR! Break statement is not in a loop." << endl;
-                    exit(1);
+                
+                stack<pair<string, int>> if_while_stack_copy = if_while_stack;
+
+                while (if_while_stack_copy.top().first != "while") {
+                    if_while_stack_copy.pop();
+                    if (if_while_stack_copy.empty()) {
+                        cout << "ERROR! Break statement is not in a loop." << endl;
+                        exit(1);
+                    }
                 }
+
+                assemblyCode += "   jmp .L_while_end_" + to_string(if_while_stack_copy.top().second) + "\n";
+                
                 assemblyCode += "\n";
                 ptr++; // points to ";"
             } else {
@@ -1021,7 +1039,11 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                 // end of if or while
                 if (if_while_stack.top().first == "if") {
                     // end of if
-                    assemblyCode += ".L_if_end_" + to_string(if_while_stack.top().second) + ":\n";
+                    assemblyCode += ".L_if_end_" + to_string(if_while_stack.top().second) + ":\n";                
+                    if_while_stack.pop();
+                    ptr++;
+                } else if (if_while_stack.top().first == "else") {
+                    // end of else 
                     if_while_stack.pop();
                     ptr++;
                 } else {
