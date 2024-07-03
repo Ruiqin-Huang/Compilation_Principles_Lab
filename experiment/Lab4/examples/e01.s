@@ -8,14 +8,11 @@ format_str:
 .text
 
 .global main
-.data
-main_return_value:
-    .int 0
 .text
 main:
    push ebp
    mov ebp, esp
-   sub esp, 0x200
+   sub esp, 0x400
 
    mov eax, 5
    push eax
@@ -42,7 +39,7 @@ main:
    push eax
    pop eax
    cmp eax, 0
-   je .L_if_end_0
+   je .L_else_0
 
 
    mov eax, DWORD PTR [ebp-4]
@@ -53,7 +50,7 @@ main:
    call printf
    add esp, 8
 
-.L_if_end_0:
+.L_else_0:
 
    mov eax, DWORD PTR [ebp-8]
    push eax

@@ -8,14 +8,11 @@ format_str:
 .text
 
 .global main
-.data
-main_return_value:
-    .int 0
 .text
 main:
    push ebp
    mov ebp, esp
-   sub esp, 0x200
+   sub esp, 0x400
 
    mov eax, 0
    push eax

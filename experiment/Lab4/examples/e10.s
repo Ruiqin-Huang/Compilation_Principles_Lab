@@ -8,9 +8,6 @@ format_str:
 .text
 
 .global fibonacci
-.data
-fibonacci_return_value:
-    .int 0
 .text
 fibonacci:
    push ebp
@@ -34,7 +31,7 @@ fibonacci:
    push eax
    pop eax
    cmp eax, 0
-   je .L_if_end_0
+   je .L_else_0
 
 
 
@@ -45,7 +42,8 @@ fibonacci:
    mov esp, ebp
    pop ebp
    ret
-.L_if_end_0:
+   jmp .L_else_end_0
+.L_else_0:
 
 
 
@@ -63,7 +61,7 @@ fibonacci:
    push eax
    pop eax
    cmp eax, 0
-   je .L_if_end_1
+   je .L_else_1
 
 
 
@@ -74,7 +72,8 @@ fibonacci:
    mov esp, ebp
    pop ebp
    ret
-.L_if_end_1:
+   jmp .L_else_end_1
+.L_else_1:
 
 
    mov eax, DWORD PTR [ebp-4]
@@ -139,11 +138,10 @@ fibonacci:
    mov esp, ebp
    pop ebp
    ret
+.L_else_end_1:
+.L_else_end_0:
 
 .global main
-.data
-main_return_value:
-    .int 0
 .text
 main:
    push ebp

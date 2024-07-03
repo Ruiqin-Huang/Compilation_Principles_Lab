@@ -836,7 +836,7 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
 
                 assemblyCode += "   pop eax\n";\
                 assemblyCode += "   cmp eax, 0\n";
-                assemblyCode += "   je .L_if_end_" + to_string(if_else_label) + "\n";
+                assemblyCode += "   je .L_else_" + to_string(if_else_label) + "\n";
                 assemblyCode += "\n";
 
                 if_while_stack.push(make_pair("if", if_else_label));
@@ -848,7 +848,7 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
             } else if (tokens[ptr].value == "else") {
                 
                 assemblyCode += "\n";
-                if_while_stack.push(make_pair("else", -1));
+                if_while_stack.push(make_pair("else", if_else_label - 1));
 
                 ptr++; // points to "{" or "if"
             } else if (tokens[ptr].value == "while") {
@@ -1069,11 +1069,19 @@ string generateAssembly(const vector<LexicalAnalyzer::Token>& tokens) {
                 // end of if or while
                 if (if_while_stack.top().first == "if") {
                     // end of if
-                    assemblyCode += ".L_if_end_" + to_string(if_while_stack.top().second) + ":\n";                
+                    
+                    if (tokens[ptr+1].value == "else") {
+                        assemblyCode += "   jmp .L_else_end_" + to_string(if_while_stack.top().second) + "\n";
+                    }
+
+                    assemblyCode += ".L_else_" + to_string(if_while_stack.top().second) + ":\n";                
                     if_while_stack.pop();
                     ptr++;
                 } else if (if_while_stack.top().first == "else") {
                     // end of else 
+
+                    assemblyCode += ".L_else_end_" + to_string(if_while_stack.top().second) + ":\n";
+
                     if_while_stack.pop();
                     ptr++;
                 } else {

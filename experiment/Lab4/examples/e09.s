@@ -8,9 +8,6 @@ format_str:
 .text
 
 .global gcd
-.data
-gcd_return_value:
-    .int 0
 .text
 gcd:
    push ebp
@@ -54,7 +51,7 @@ gcd:
    push eax
    pop eax
    cmp eax, 0
-   je .L_if_end_0
+   je .L_else_0
 
 
 
@@ -65,7 +62,9 @@ gcd:
    mov esp, ebp
    pop ebp
    ret
-.L_if_end_0:
+   jmp .L_else_end_0
+.L_else_0:
+
 
 
    mov eax, DWORD PTR [ebp-4]
@@ -92,48 +91,14 @@ gcd:
 
    mov eax, DWORD PTR [ebp-12]
    push eax
-   pop eax
-   push eax
-   push offset format_str
-   call printf
-   add esp, 8
-
-
-
-   mov eax, DWORD PTR [ebp-4]
-   push eax
-
-   mov eax, DWORD PTR [ebp-8]
-   push eax
-
-   pop ebx
-   pop eax
-   cdq
-   idiv ebx
-   push edx
-   pop eax
-   push eax
-
-   mov eax, DWORD PTR [ebp-8]
-   push eax
-   pop eax
-   push eax
-   call gcd
-   add esp, 8
-   mov DWORD PTR [ebp-16], eax
-
-   mov eax, DWORD PTR [ebp-16]
-   push eax
 
    pop eax
    mov esp, ebp
    pop ebp
    ret
+.L_else_end_0:
 
 .global main
-.data
-main_return_value:
-    .int 0
 .text
 main:
    push ebp
